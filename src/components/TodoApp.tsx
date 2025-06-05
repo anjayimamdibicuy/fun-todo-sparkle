@@ -3,9 +3,11 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Calendar, CheckCircle, History, LogOut, Plus, Sparkles, Target, Trash2 } from 'lucide-react';
+import { Calendar, CheckCircle, History, LogOut, Plus, Target, Trash2 } from 'lucide-react';
 import { getCurrentUser, getTodaysTodos, saveTodaysTodos, generateId, type Todo } from '@/utils/storage';
 import AddTodoModal from './AddTodoModal';
+import MandatoryChecklist from './MandatoryChecklist';
+import NotificationSystem from './NotificationSystem';
 import { toast } from '@/hooks/use-toast';
 
 interface TodoAppProps {
@@ -39,8 +41,8 @@ const TodoApp: React.FC<TodoAppProps> = ({ userName, onLogout, onShowHistory }) 
     };
     setTodos(prev => [...prev, newTodo]);
     toast({
-      title: "🎉 Kegiatan Ditambahkan!",
-      description: "Semangat menyelesaikan kegiatanmu!",
+      title: "✅ Kegiatan Ditambahkan!",
+      description: "Semangat menyelesaikannya!",
     });
   };
 
@@ -55,8 +57,8 @@ const TodoApp: React.FC<TodoAppProps> = ({ userName, onLogout, onShowHistory }) 
         
         if (!todo.completed) {
           toast({
-            title: "🌟 Keren! Kegiatan Selesai!",
-            description: "Kamu luar biasa! Terus semangat! 💪",
+            title: "🎉 Nice! Kegiatan Selesai!",
+            description: "Keren banget! Keep it up! 💪",
           });
         }
         
@@ -70,7 +72,7 @@ const TodoApp: React.FC<TodoAppProps> = ({ userName, onLogout, onShowHistory }) 
     setTodos(prev => prev.filter(todo => todo.id !== id));
     toast({
       title: "🗑️ Kegiatan Dihapus",
-      description: "Kegiatan telah dihapus dari daftar",
+      description: "Kegiatan telah dihapus dari list",
     });
   };
 
@@ -90,116 +92,117 @@ const TodoApp: React.FC<TodoAppProps> = ({ userName, onLogout, onShowHistory }) 
 
   const getMotivationMessage = () => {
     const percentage = getProgressPercentage();
-    if (percentage === 100) return "🎉 Perfect! Kamu luar biasa hari ini!";
-    if (percentage >= 75) return "🌟 Hampir selesai! Kamu hebat!";
-    if (percentage >= 50) return "💪 Setengah jalan! Terus semangat!";
-    if (percentage >= 25) return "🚀 Mulai bagus! Ayo lanjutkan!";
-    return "✨ Hari yang fresh! Ayo mulai kegiatan pertama!";
+    if (percentage === 100) return "🏆 Perfect! Kamu amazing hari ini!";
+    if (percentage >= 75) return "🌟 Hampir selesai! Keren banget!";
+    if (percentage >= 50) return "💪 Good progress! Terus semangat!";
+    if (percentage >= 25) return "🚀 Nice start! Ayo lanjutkan!";
+    return "✨ Fresh start! Let's do this!";
   };
 
+  const customTodos = todos.filter(todo => 
+    !todo.text.toLowerCase().includes('tidur') &&
+    !todo.text.toLowerCase().includes('makan') &&
+    !todo.text.toLowerCase().includes('minum') &&
+    !todo.text.toLowerCase().includes('gerak') &&
+    !todo.text.toLowerCase().includes('stres') &&
+    !todo.text.toLowerCase().includes('kimia') &&
+    !todo.text.toLowerCase().includes('obat')
+  );
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 p-4">
+    <div className="min-h-screen modern-gradient p-4">
+      <NotificationSystem userName={userName} />
+      
       <div className="max-w-4xl mx-auto">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 space-y-4 md:space-y-0">
           <div>
-            <h1 className="text-4xl font-bold gradient-text flex items-center space-x-2">
-              <Sparkles className="w-8 h-8 text-purple-500 sparkle" />
-              <span>Halo, {userName}! ✨</span>
+            <h1 className="text-3xl md:text-4xl font-bold text-white flex items-center space-x-2">
+              <Target className="w-8 h-8 text-white subtle-bounce" />
+              <span>Hi, {userName}! 👋</span>
             </h1>
-            <p className="text-gray-600 mt-2">{formatDate()}</p>
+            <p className="text-white/80 mt-2">{formatDate()}</p>
           </div>
           
           <div className="flex space-x-3">
             <Button
               onClick={onShowHistory}
               variant="outline"
-              className="bg-white/50 backdrop-blur-sm border-2 border-purple-200 hover:border-purple-300 rounded-xl px-6 py-3 transition-all duration-300 hover:scale-105"
+              className="glass-modern border-white/30 text-white hover:bg-white/20 rounded-xl px-6 py-3 transition-all duration-300"
             >
               <History className="w-5 h-5 mr-2" />
-              Rekap
+              History
             </Button>
             <Button
               onClick={onLogout}
               variant="outline"
-              className="bg-white/50 backdrop-blur-sm border-2 border-pink-200 hover:border-pink-300 rounded-xl px-6 py-3 transition-all duration-300 hover:scale-105"
+              className="glass-modern border-white/30 text-white hover:bg-white/20 rounded-xl px-6 py-3 transition-all duration-300"
             >
               <LogOut className="w-5 h-5 mr-2" />
-              Keluar
+              Logout
             </Button>
           </div>
         </div>
 
         {/* Progress Card */}
-        <Card className="glass-effect border-0 shadow-xl mb-8">
+        <Card className="glass-modern border-0 shadow-xl mb-8">
           <CardHeader>
-            <CardTitle className="text-2xl font-bold text-gray-800 flex items-center space-x-2">
-              <Target className="w-7 h-7 text-blue-500 pulse-soft" />
+            <CardTitle className="text-2xl font-bold text-white flex items-center space-x-2">
+              <Target className="w-7 h-7 text-white" />
               <span>Progress Hari Ini</span>
             </CardTitle>
-            <CardDescription className="text-lg text-gray-600">
+            <CardDescription className="text-lg text-white/80">
               {getMotivationMessage()}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex items-center justify-between mb-4">
-              <span className="text-lg font-semibold text-gray-700">
+              <span className="text-lg font-semibold text-white">
                 {completedCount} dari {todos.length} kegiatan selesai
               </span>
-              <span className="text-3xl font-bold gradient-text">
+              <span className="text-3xl font-bold text-white">
                 {getProgressPercentage()}%
               </span>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-4">
+            <div className="w-full bg-white/20 rounded-full h-4">
               <div
-                className="bg-gradient-to-r from-green-400 to-blue-500 h-4 rounded-full transition-all duration-500 ease-out"
+                className="bg-white h-4 rounded-full transition-all duration-500 ease-out"
                 style={{ width: `${getProgressPercentage()}%` }}
               ></div>
             </div>
           </CardContent>
         </Card>
 
+        {/* Mandatory Checklist */}
+        <MandatoryChecklist todos={todos} onToggleTodo={toggleTodo} />
+
         {/* Add Todo Button */}
         <div className="flex justify-center mb-8">
           <Button
             onClick={() => setIsAddModalOpen(true)}
-            className="bg-gradient-to-r from-pink-400 to-purple-500 hover:from-pink-500 hover:to-purple-600 border-0 rounded-xl px-8 py-4 text-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg"
+            className="bg-white/90 text-gray-800 hover:bg-white border-0 rounded-xl px-8 py-4 text-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg"
           >
             <Plus className="w-6 h-6 mr-2" />
-            Tambah Kegiatan Baru ✨
+            Tambah Kegiatan Custom ✨
           </Button>
         </div>
 
-        {/* Todo List */}
-        <div className="space-y-4">
-          {todos.length === 0 ? (
-            <Card className="glass-effect border-0 shadow-xl text-center py-16">
-              <CardContent>
-                <Calendar className="w-20 h-20 text-purple-400 mx-auto mb-6 bounce-gentle" />
-                <h3 className="text-2xl font-semibold text-gray-700 mb-4">
-                  Belum Ada Kegiatan Hari Ini
-                </h3>
-                <p className="text-gray-500 text-lg mb-6">
-                  Ayo tambah kegiatan pertamamu dan mulai hari yang produktif! 🌟
-                </p>
-                <Button
-                  onClick={() => setIsAddModalOpen(true)}
-                  className="bg-gradient-to-r from-blue-400 to-purple-500 hover:from-blue-500 hover:to-purple-600 border-0 rounded-xl px-6 py-3 transition-all duration-300 transform hover:scale-105"
+        {/* Custom Todo List */}
+        {customTodos.length > 0 && (
+          <Card className="glass-modern border-0 shadow-xl mb-8">
+            <CardHeader>
+              <CardTitle className="text-xl font-bold text-white">
+                Kegiatan Custom 📝
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {customTodos.map((todo) => (
+                <div
+                  key={todo.id}
+                  className={`p-4 rounded-xl transition-all duration-300 ${
+                    todo.completed ? 'bg-green-100/80' : 'bg-white/80'
+                  }`}
                 >
-                  <Plus className="w-5 h-5 mr-2" />
-                  Tambah Kegiatan
-                </Button>
-              </CardContent>
-            </Card>
-          ) : (
-            todos.map((todo, index) => (
-              <Card
-                key={todo.id}
-                className={`glass-effect border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] ${
-                  todo.completed ? 'bg-green-50/50' : 'bg-white/50'
-                }`}
-              >
-                <CardContent className="p-6">
                   <div className="flex items-center space-x-4">
                     <Checkbox
                       id={todo.id}
@@ -223,7 +226,7 @@ const TodoApp: React.FC<TodoAppProps> = ({ userName, onLogout, onShowHistory }) 
                         <div className="flex items-center space-x-2 mt-2">
                           <CheckCircle className="w-4 h-4 text-green-500" />
                           <span className="text-sm text-green-600">
-                            Selesai! Great job! 🎉
+                            Done! Great job! 🎉
                           </span>
                         </div>
                       )}
@@ -238,11 +241,33 @@ const TodoApp: React.FC<TodoAppProps> = ({ userName, onLogout, onShowHistory }) 
                       <Trash2 className="w-5 h-5" />
                     </Button>
                   </div>
-                </CardContent>
-              </Card>
-            ))
-          )}
-        </div>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Empty State */}
+        {customTodos.length === 0 && (
+          <Card className="glass-modern border-0 shadow-xl text-center py-16">
+            <CardContent>
+              <Calendar className="w-20 h-20 text-white/60 mx-auto mb-6 float-animation" />
+              <h3 className="text-2xl font-semibold text-white mb-4">
+                Belum Ada Kegiatan Custom
+              </h3>
+              <p className="text-white/80 text-lg mb-6">
+                Fokus dulu sama checklist wajib, atau tambah kegiatan custom! 🌟
+              </p>
+              <Button
+                onClick={() => setIsAddModalOpen(true)}
+                className="bg-white/90 text-gray-800 hover:bg-white border-0 rounded-xl px-6 py-3 transition-all duration-300 transform hover:scale-105"
+              >
+                <Plus className="w-5 h-5 mr-2" />
+                Tambah Kegiatan
+              </Button>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       <AddTodoModal

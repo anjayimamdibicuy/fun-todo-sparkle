@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Heart, Sparkles, Star } from 'lucide-react';
+import { User, CheckCircle } from 'lucide-react';
 import { setCurrentUser } from '@/utils/storage';
 
 interface LoginPageProps {
@@ -27,52 +27,52 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-200 via-purple-200 to-blue-200 p-4">
+    <div className="min-h-screen flex items-center justify-center modern-gradient p-4">
       <div className="absolute inset-0 overflow-hidden">
-        {[...Array(20)].map((_, i) => (
+        {[...Array(15)].map((_, i) => (
           <div
             key={i}
-            className="absolute animate-pulse"
+            className="absolute float-animation"
             style={{
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 2}s`,
-              animationDuration: `${2 + Math.random() * 2}s`
+              animationDelay: `${Math.random() * 3}s`,
+              animationDuration: `${3 + Math.random() * 2}s`
             }}
           >
-            <Star className="w-4 h-4 text-pink-400 opacity-50" />
+            <CheckCircle className="w-6 h-6 text-white/20" />
           </div>
         ))}
       </div>
       
-      <Card className="w-full max-w-md glass-effect border-0 shadow-2xl relative z-10">
-        <CardHeader className="text-center space-y-4">
-          <div className="flex justify-center space-x-2">
-            <Heart className="w-8 h-8 text-pink-500 sparkle" />
-            <Sparkles className="w-8 h-8 text-purple-500 bounce-gentle" />
-            <Heart className="w-8 h-8 text-pink-500 sparkle" />
+      <Card className="w-full max-w-md glass-modern border-0 shadow-2xl relative z-10">
+        <CardHeader className="text-center space-y-6">
+          <div className="flex justify-center">
+            <div className="p-4 bg-white/20 rounded-full backdrop-blur-sm">
+              <User className="w-10 h-10 text-white" />
+            </div>
           </div>
-          <CardTitle className="text-3xl font-bold gradient-text">
-            ✨ Daily Magic ✨
+          <CardTitle className="text-3xl font-bold text-white">
+            Daily Tracker 📋
           </CardTitle>
-          <CardDescription className="text-lg text-gray-600">
-            Masukkan nama cantikmu untuk memulai petualangan harian! 💕
+          <CardDescription className="text-lg text-white/80">
+            Masukkan nama kamu untuk mulai tracking harian! 🎯
           </CardDescription>
         </CardHeader>
         
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <label htmlFor="name" className="text-sm font-medium text-gray-700">
-                Siapa nama cantiknya? 🌸
+              <label htmlFor="name" className="text-sm font-medium text-white/90">
+                Nama kamu siapa? 👋
               </label>
               <Input
                 id="name"
                 type="text"
-                placeholder="Tulis nama indahmu di sini..."
+                placeholder="Ketik nama kamu di sini..."
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="text-center text-lg py-3 border-2 border-pink-200 focus:border-purple-400 rounded-xl transition-all duration-300 hover:shadow-lg"
+                className="text-center text-lg py-3 bg-white/90 border-0 rounded-xl transition-all duration-300 hover:shadow-lg focus:shadow-lg"
                 required
               />
             </div>
@@ -80,17 +80,17 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
             <Button
               type="submit"
               disabled={!name.trim() || isLoading}
-              className="w-full py-3 text-lg font-semibold bg-gradient-to-r from-pink-400 to-purple-500 hover:from-pink-500 hover:to-purple-600 border-0 rounded-xl transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-3 text-lg font-semibold bg-white/90 text-gray-800 hover:bg-white border-0 rounded-xl transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? (
                 <div className="flex items-center space-x-2">
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  <span>Mempersiapkan keajaiban...</span>
+                  <div className="w-5 h-5 border-2 border-gray-600 border-t-transparent rounded-full animate-spin"></div>
+                  <span>Loading...</span>
                 </div>
               ) : (
                 <div className="flex items-center space-x-2">
-                  <Sparkles className="w-5 h-5" />
-                  <span>Mulai Petualangan! 🚀</span>
+                  <CheckCircle className="w-5 h-5" />
+                  <span>Let's Go! 🚀</span>
                 </div>
               )}
             </Button>

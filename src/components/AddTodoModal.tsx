@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Plus, Sparkles, Target } from 'lucide-react';
+import { Plus, Target } from 'lucide-react';
 
 interface AddTodoModalProps {
   isOpen: boolean;
@@ -35,18 +35,18 @@ const AddTodoModal: React.FC<AddTodoModalProps> = ({ isOpen, onClose, onAdd }) =
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md glass-effect border-0 shadow-2xl">
+      <DialogContent className="sm:max-w-md glass-modern border-0 shadow-2xl">
         <DialogHeader className="text-center space-y-4">
           <div className="flex justify-center">
-            <div className="p-3 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full">
-              <Target className="w-8 h-8 text-white sparkle" />
+            <div className="p-3 modern-gradient rounded-full">
+              <Target className="w-8 h-8 text-white" />
             </div>
           </div>
-          <DialogTitle className="text-2xl font-bold gradient-text">
-            ✨ Tambah Kegiatan Baru ✨
+          <DialogTitle className="text-2xl font-bold gradient-text-modern">
+            Tambah Kegiatan Baru 📝
           </DialogTitle>
           <DialogDescription className="text-gray-600">
-            Apa kegiatan seru yang ingin kamu lakukan hari ini? 🌟
+            Apa yang mau dikerjain hari ini? 🎯
           </DialogDescription>
         </DialogHeader>
         
@@ -54,10 +54,10 @@ const AddTodoModal: React.FC<AddTodoModalProps> = ({ isOpen, onClose, onAdd }) =
           <div className="space-y-2">
             <Input
               type="text"
-              placeholder="Contoh: Minum air 8 gelas 💧"
+              placeholder="Contoh: Olahraga 30 menit 🏃‍♀️"
               value={todoText}
               onChange={(e) => setTodoText(e.target.value)}
-              className="text-center text-lg py-3 border-2 border-blue-200 focus:border-purple-400 rounded-xl transition-all duration-300"
+              className="text-center text-lg py-3 border-2 border-gray-200 focus:border-blue-400 rounded-xl transition-all duration-300"
               required
               autoFocus
             />
@@ -75,17 +75,17 @@ const AddTodoModal: React.FC<AddTodoModalProps> = ({ isOpen, onClose, onAdd }) =
             <Button
               type="submit"
               disabled={!todoText.trim() || isAdding}
-              className="flex-1 py-3 bg-gradient-to-r from-blue-400 to-purple-500 hover:from-blue-500 hover:to-purple-600 border-0 rounded-xl transition-all duration-300 transform hover:scale-105"
+              className="flex-1 py-3 modern-gradient border-0 rounded-xl transition-all duration-300 transform hover:scale-105 text-white"
             >
               {isAdding ? (
                 <div className="flex items-center space-x-2">
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  <span>Menambahkan...</span>
+                  <span>Adding...</span>
                 </div>
               ) : (
                 <div className="flex items-center space-x-2">
                   <Plus className="w-5 h-5" />
-                  <span>Tambah! 🎉</span>
+                  <span>Tambah! ✨</span>
                 </div>
               )}
             </Button>
