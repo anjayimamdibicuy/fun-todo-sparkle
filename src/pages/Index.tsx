@@ -1,40 +1,33 @@
 
 import React, { useState, useEffect } from 'react';
-import AuthPage from '@/components/AuthPage';
-import DatabaseTodoApp from '@/components/DatabaseTodoApp';
-import DatabaseHistoryPage from '@/components/DatabaseHistoryPage';
-import { type DatabaseUser } from '@/hooks/useDatabase';
+import LoginPage from '@/components/LoginPage';
+import TodoApp from '@/components/TodoApp';
+import HistoryPage from '@/components/HistoryPage';
+import { getCurrentUser } from '@/utils/storage';
 
-type Page = 'auth' | 'todo' | 'history';
+type Page = 'login' | 'todo' | 'history';
 
 const Index = () => {
-  const [currentPage, setCurrentPage] = useState<Page>('auth');
-  const [currentUser, setCurrentUser] = useState<DatabaseUser | null>(null);
+  const [currentPage, setCurrentPage] = useState<Page>('login');
+  const [userName, setUserName] = useState<string>('');
 
   useEffect(() => {
-    // Check if user was previously logged in
-    const savedUser = localStorage.getItem('todo_current_user');
+    const savedUser = getCurrentUser();
     if (savedUser) {
-      try {
-        const user = JSON.parse(savedUser);
-        setCurrentUser(user);
-        setCurrentPage('todo');
-      } catch (error) {
-        localStorage.removeItem('todo_current_user');
-      }
+      setUserName(savedUser);
+      setCurrentPage('todo');
     }
   }, []);
 
-  const handleLogin = (user: DatabaseUser) => {
-    setCurrentUser(user);
+  const handleLogin = (name: string) => {
+    setUserName(name);
     setCurrentPage('todo');
-    localStorage.setItem('todo_current_user', JSON.stringify(user));
   };
 
   const handleLogout = () => {
     localStorage.removeItem('todo_current_user');
-    setCurrentUser(null);
-    setCurrentPage('auth');
+    setUserName('');
+    setCurrentPage('login');
   };
 
   const handleShowHistory = () => {
@@ -46,22 +39,20 @@ const Index = () => {
   };
 
   switch (currentPage) {
-    case 'auth':
-      return <AuthPage onLogin={handleLogin} />;
+    case 'login':
+      return <LoginPage onLogin={handleLogin} />;
     case 'todo':
-      return currentUser ? (
-        <DatabaseTodoApp
-          user={currentUser}
+      return (
+        <TodoApp
+          userName={userName}
           onLogout={handleLogout}
           onShowHistory={handleShowHistory}
         />
-      ) : (
-        <AuthPage onLogin={handleLogin} />
       );
     case 'history':
-      return <DatabaseHistoryPage onBack={handleBackToTodo} />;
+      return <HistoryPage onBack={handleBackToTodo} />;
     default:
-      return <AuthPage onLogin={handleLogin} />;
+      return <LoginPage onLogin={handleLogin} />;
   }
 };
 
