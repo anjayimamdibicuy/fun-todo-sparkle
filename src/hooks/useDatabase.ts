@@ -26,11 +26,12 @@ export const useDatabase = () => {
 
   const setUserContext = async (userName: string) => {
     try {
-      await supabase.rpc('set_config', {
+      const { error } = await supabase.rpc('set_config', {
         setting_name: 'app.current_user',
         setting_value: userName,
         is_local: true
       });
+      if (error) throw error;
     } catch (error) {
       console.error('Error setting user context:', error);
     }

@@ -77,6 +77,14 @@ export type Database = {
         Args: { user_name: string; target_date?: string }
         Returns: undefined
       }
+      set_config: {
+        Args: {
+          setting_name: string
+          setting_value: string
+          is_local?: boolean
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
