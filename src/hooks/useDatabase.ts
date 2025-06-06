@@ -20,9 +20,17 @@ export interface DatabaseUser {
   created_at: string;
 }
 
-export const useDatabase = () => {
-  const [currentUser, setCurrentUser] = useState<DatabaseUser | null>(null);
+export const useDatabase = (initialUser?: DatabaseUser | null) => {
+  const [currentUser, setCurrentUser] = useState<DatabaseUser | null>(initialUser || null);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Update currentUser when initialUser changes
+  useEffect(() => {
+    if (initialUser) {
+      console.log('Setting current user from prop:', initialUser);
+      setCurrentUser(initialUser);
+    }
+  }, [initialUser]);
 
   const setUserContext = async (userName: string) => {
     try {
@@ -156,6 +164,9 @@ export const useDatabase = () => {
     try {
       console.log('Fetching todos for user:', currentUser.name, 'date:', date);
       
+      // Set user context before querying
+      await setUserContext(currentUser.name);
+      
       let query = supabase
         .from('todos')
         .select('*')
@@ -191,11 +202,19 @@ export const useDatabase = () => {
   const addTodo = async (text: string): Promise<DatabaseTodo | null> => {
     if (!currentUser) {
       console.log('No current user for adding todo');
+      toast({
+        title: "Error",
+        description: "User tidak ditemukan, silakan login ulang",
+        variant: "destructive"
+      });
       return null;
     }
 
     try {
       console.log('Adding todo:', text, 'for user:', currentUser.id);
+      
+      // Set user context before inserting
+      await setUserContext(currentUser.name);
       
       const { data, error } = await supabase
         .from('todos')
@@ -229,8 +248,16 @@ export const useDatabase = () => {
   };
 
   const toggleTodo = async (todoId: string, completed: boolean): Promise<boolean> => {
+    if (!currentUser) {
+      console.log('No current user for toggling todo');
+      return false;
+    }
+
     try {
       console.log('Toggling todo:', todoId, 'to:', completed);
+      
+      // Set user context before updating
+      await setUserContext(currentUser.name);
       
       const { error } = await supabase
         .from('todos')
@@ -261,8 +288,16 @@ export const useDatabase = () => {
   };
 
   const deleteTodo = async (todoId: string): Promise<boolean> => {
+    if (!currentUser) {
+      console.log('No current user for deleting todo');
+      return false;
+    }
+
     try {
       console.log('Deleting todo:', todoId);
+      
+      // Set user context before deleting
+      await setUserContext(currentUser.name);
       
       const { error } = await supabase
         .from('todos')
@@ -294,6 +329,9 @@ export const useDatabase = () => {
 
     try {
       console.log('Fetching history for user:', currentUser.name);
+      
+      // Set user context before querying
+      await setUserContext(currentUser.name);
       
       const { data, error } = await supabase
         .from('todos')

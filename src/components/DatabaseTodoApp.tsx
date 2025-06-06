@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -22,7 +21,9 @@ const DatabaseTodoApp: React.FC<DatabaseTodoAppProps> = ({ user, onLogout, onSho
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: boolean; todo?: DatabaseTodo }>({ isOpen: false });
   const [isLoading, setIsLoading] = useState(true);
-  const { getTodos, addTodo, toggleTodo, deleteTodo, logout, generateMandatoryTodos } = useDatabase();
+  
+  // Pass the user to useDatabase hook
+  const { getTodos, addTodo, toggleTodo, deleteTodo, logout, generateMandatoryTodos } = useDatabase(user);
 
   const loadTodos = async () => {
     console.log('Loading todos for user:', user.name);
