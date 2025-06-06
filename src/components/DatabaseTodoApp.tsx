@@ -21,15 +21,31 @@ const DatabaseTodoApp: React.FC<DatabaseTodoAppProps> = ({ user, onLogout, onSho
   const [todos, setTodos] = useState<DatabaseTodo[]>([]);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: boolean; todo?: DatabaseTodo }>({ isOpen: false });
+  const [isLoading, setIsLoading] = useState(true);
   const { getTodos, addTodo, toggleTodo, deleteTodo, logout, generateMandatoryTodos } = useDatabase();
 
   const loadTodos = async () => {
-    const today = new Date().toISOString().split('T')[0];
-    const todayTodos = await getTodos(today);
-    setTodos(todayTodos);
+    console.log('Loading todos for user:', user.name);
+    setIsLoading(true);
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const todayTodos = await getTodos(today);
+      console.log('Loaded todos:', todayTodos);
+      setTodos(todayTodos);
+    } catch (error) {
+      console.error('Error loading todos:', error);
+      toast({
+        title: "Error",
+        description: "Gagal memuat data todos",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {
+    console.log('Component mounted for user:', user.name);
     loadTodos();
     
     // Generate mandatory todos at midnight
@@ -39,13 +55,16 @@ const DatabaseTodoApp: React.FC<DatabaseTodoAppProps> = ({ user, onLogout, onSho
     tomorrow.setHours(0, 0, 0, 0);
     
     const timeUntilMidnight = tomorrow.getTime() - now.getTime();
+    console.log('Time until midnight:', timeUntilMidnight, 'ms');
     
     const midnightTimer = setTimeout(() => {
+      console.log('Midnight reached, generating mandatory todos');
       generateMandatoryTodos(user.name);
       loadTodos();
       
       // Set up daily interval
       const dailyInterval = setInterval(() => {
+        console.log('Daily interval triggered');
         generateMandatoryTodos(user.name);
         loadTodos();
       }, 24 * 60 * 60 * 1000);
@@ -57,50 +76,90 @@ const DatabaseTodoApp: React.FC<DatabaseTodoAppProps> = ({ user, onLogout, onSho
   }, [user.name]);
 
   const handleAddTodo = async (text: string) => {
-    const newTodo = await addTodo(text);
-    if (newTodo) {
-      setTodos(prev => [...prev, newTodo]);
-      toast({
-        title: "✅ Kegiatan Ditambahkan!",
-        description: "Semangat menyelesaikannya! 💪",
-      });
+    console.log('Adding new todo:', text);
+    try {
+      const newTodo = await addTodo(text);
+      if (newTodo) {
+        console.log('Todo added successfully:', newTodo);
+        setTodos(prev => [...prev, newTodo]);
+        toast({
+          title: "✅ Kegiatan Ditambahkan!",
+          description: "Semangat menyelesaikannya! 💪",
+        });
+      } else {
+        console.log('Failed to add todo');
+        toast({
+          title: "Error",
+          description: "Gagal menambahkan kegiatan",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error('Error adding todo:', error);
     }
   };
 
   const handleToggleTodo = async (id: string, completed: boolean) => {
-    const success = await toggleTodo(id, completed);
-    if (success) {
-      setTodos(prev => prev.map(todo => 
-        todo.id === id 
-          ? { ...todo, completed, completed_at: completed ? new Date().toISOString() : undefined }
-          : todo
-      ));
-      
-      if (completed) {
+    console.log('Toggling todo:', id, 'to completed:', completed);
+    try {
+      const success = await toggleTodo(id, completed);
+      if (success) {
+        console.log('Todo toggled successfully');
+        setTodos(prev => prev.map(todo => 
+          todo.id === id 
+            ? { ...todo, completed, completed_at: completed ? new Date().toISOString() : undefined }
+            : todo
+        ));
+        
+        if (completed) {
+          toast({
+            title: "🎉 Amazing! Kegiatan Selesai!",
+            description: "Kamu luar biasa! Keep going! ✨",
+          });
+        }
+      } else {
+        console.log('Failed to toggle todo');
         toast({
-          title: "🎉 Amazing! Kegiatan Selesai!",
-          description: "Kamu luar biasa! Keep going! ✨",
+          title: "Error",
+          description: "Gagal mengupdate kegiatan",
+          variant: "destructive"
         });
       }
+    } catch (error) {
+      console.error('Error toggling todo:', error);
     }
   };
 
   const handleDeleteConfirm = async () => {
     if (!deleteConfirm.todo) return;
     
-    const success = await deleteTodo(deleteConfirm.todo.id);
-    if (success) {
-      setTodos(prev => prev.filter(todo => todo.id !== deleteConfirm.todo!.id));
-      toast({
-        title: "🗑️ Kegiatan Dihapus",
-        description: "Kegiatan telah dihapus dari list",
-      });
+    console.log('Deleting todo:', deleteConfirm.todo.id);
+    try {
+      const success = await deleteTodo(deleteConfirm.todo.id);
+      if (success) {
+        console.log('Todo deleted successfully');
+        setTodos(prev => prev.filter(todo => todo.id !== deleteConfirm.todo!.id));
+        toast({
+          title: "🗑️ Kegiatan Dihapus",
+          description: "Kegiatan telah dihapus dari list",
+        });
+      } else {
+        console.log('Failed to delete todo');
+        toast({
+          title: "Error",
+          description: "Gagal menghapus kegiatan",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error('Error deleting todo:', error);
     }
     
     setDeleteConfirm({ isOpen: false });
   };
 
   const handleLogout = () => {
+    console.log('Logging out');
     logout();
     onLogout();
   };
@@ -130,6 +189,22 @@ const DatabaseTodoApp: React.FC<DatabaseTodoAppProps> = ({ user, onLogout, onSho
   };
 
   const customTodos = todos.filter(todo => !todo.is_mandatory);
+  const mandatoryTodos = todos.filter(todo => todo.is_mandatory);
+
+  console.log('Render state:', {
+    totalTodos: todos.length,
+    mandatoryTodos: mandatoryTodos.length,
+    customTodos: customTodos.length,
+    isLoading
+  });
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen modern-gradient p-4 flex items-center justify-center">
+        <div className="text-white text-xl">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen modern-gradient p-4">
@@ -214,7 +289,7 @@ const DatabaseTodoApp: React.FC<DatabaseTodoAppProps> = ({ user, onLogout, onSho
           <Card className="glass-modern border-0 shadow-xl mb-8 animate-fade-in">
             <CardHeader>
               <CardTitle className="text-xl font-bold text-white">
-                Kegiatan Custom 📝
+                Kegiatan Custom 📝 ({customTodos.length})
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">

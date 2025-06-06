@@ -59,10 +59,12 @@ const EnhancedMandatoryChecklist: React.FC<EnhancedMandatoryChecklistProps> = ({
     }
   ];
 
-  const getMandatoryTodo = (itemKey: string) => {
+  // Find todo by matching text more precisely
+  const getMandatoryTodo = (itemKey: string, itemText: string) => {
     return todos.find(todo => 
       todo.is_mandatory && 
-      (todo.text.toLowerCase().includes(itemKey) || 
+      (todo.text === itemText || 
+       todo.text.toLowerCase().includes(itemKey) ||
        (itemKey === 'makan' && todo.text.toLowerCase().includes('anti-inflamasi')) ||
        (itemKey === 'gerak' && todo.text.toLowerCase().includes('gerak')) ||
        (itemKey === 'stres' && todo.text.toLowerCase().includes('stres')) ||
@@ -71,10 +73,12 @@ const EnhancedMandatoryChecklist: React.FC<EnhancedMandatoryChecklistProps> = ({
     );
   };
 
-  const completedCount = mandatoryItems.filter(item => {
-    const todo = getMandatoryTodo(item.key);
-    return todo?.completed;
-  }).length;
+  const mandatoryTodos = todos.filter(todo => todo.is_mandatory);
+  const completedCount = mandatoryTodos.filter(todo => todo.completed).length;
+
+  console.log('Mandatory todos:', mandatoryTodos);
+  console.log('Total mandatory todos in component:', mandatoryTodos.length);
+  console.log('Completed mandatory todos:', completedCount);
 
   return (
     <Card className="glass-modern border-0 shadow-xl mb-6 animate-fade-in">
@@ -85,14 +89,16 @@ const EnhancedMandatoryChecklist: React.FC<EnhancedMandatoryChecklistProps> = ({
             <span>Checklist Wajib Harian 💪</span>
           </div>
           <div className="text-sm font-normal text-gray-600 bg-white/50 px-3 py-1 rounded-full">
-            {completedCount}/7 ✨
+            {completedCount}/{mandatoryTodos.length} ✨
           </div>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         {mandatoryItems.map((item, index) => {
-          const relatedTodo = getMandatoryTodo(item.key);
+          const relatedTodo = getMandatoryTodo(item.key, item.text);
           const isCompleted = relatedTodo?.completed || false;
+          
+          console.log(`Item ${item.text}:`, { relatedTodo, isCompleted });
           
           return (
             <div
@@ -105,11 +111,15 @@ const EnhancedMandatoryChecklist: React.FC<EnhancedMandatoryChecklistProps> = ({
             >
               <div className="flex items-start space-x-3">
                 <Checkbox
-                  id={item.key}
+                  id={`mandatory-${item.key}`}
                   checked={isCompleted}
-                  onCheckedChange={() => {
+                  onCheckedChange={(checked) => {
+                    console.log(`Checkbox changed for ${item.text}:`, checked);
                     if (relatedTodo) {
-                      onToggleTodo(relatedTodo.id, !isCompleted);
+                      console.log('Calling onToggleTodo with:', relatedTodo.id, !!checked);
+                      onToggleTodo(relatedTodo.id, !!checked);
+                    } else {
+                      console.log('No related todo found for:', item.text);
                     }
                   }}
                   className="mt-1 w-6 h-6 rounded-full data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-pink-500 data-[state=checked]:to-purple-500 data-[state=checked]:border-pink-500 transition-all duration-300"
@@ -138,6 +148,13 @@ const EnhancedMandatoryChecklist: React.FC<EnhancedMandatoryChecklistProps> = ({
                     <div className="mt-2 ml-7">
                       <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded-full animate-fade-in">
                         ✅ Keren! Keep it up! 🌟
+                      </span>
+                    </div>
+                  )}
+                  {!relatedTodo && (
+                    <div className="mt-2 ml-7">
+                      <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+                        Todo belum tersedia
                       </span>
                     </div>
                   )}
