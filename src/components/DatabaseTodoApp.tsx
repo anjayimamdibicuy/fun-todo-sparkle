@@ -1,25 +1,35 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Calendar, CheckCircle, History, LogOut, Plus, Target, Trash2 } from 'lucide-react';
-import { useDatabase, type DatabaseTodo, type DatabaseUser } from '@/hooks/useDatabase';
+import { Calendar, CheckCircle, History, LogOut, Plus, Target, Trash2, Camera, Users } from 'lucide-react';
+import { useDatabase } from '@/hooks/useDatabase';
+import { DatabaseTodo, DatabaseUser } from '@/types/database';
 import AddTodoModal from './AddTodoModal';
 import EnhancedMandatoryChecklist from './EnhancedMandatoryChecklist';
 import NotificationSystem from './NotificationSystem';
 import ConfirmDialog from './ConfirmDialog';
+import ImageUploadModal from './ImageUpload/ImageUploadModal';
 import { toast } from '@/hooks/use-toast';
 
 interface DatabaseTodoAppProps {
   user: DatabaseUser;
   onLogout: () => void;
   onShowHistory: () => void;
+  onShowPublicTodos: () => void;
 }
 
-const DatabaseTodoApp: React.FC<DatabaseTodoAppProps> = ({ user, onLogout, onShowHistory }) => {
+const DatabaseTodoApp: React.FC<DatabaseTodoAppProps> = ({ 
+  user, 
+  onLogout, 
+  onShowHistory, 
+  onShowPublicTodos 
+}) => {
   const [todos, setTodos] = useState<DatabaseTodo[]>([]);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: boolean; todo?: DatabaseTodo }>({ isOpen: false });
+  const [imageUpload, setImageUpload] = useState<{ isOpen: boolean; todoId?: string }>({ isOpen: false });
   const [isLoading, setIsLoading] = useState(true);
   
   // Pass the user to useDatabase hook
@@ -159,6 +169,12 @@ const DatabaseTodoApp: React.FC<DatabaseTodoAppProps> = ({ user, onLogout, onSho
     setDeleteConfirm({ isOpen: false });
   };
 
+  const handleImageUploaded = (todoId: string, imageUrl: string) => {
+    setTodos(prev => prev.map(todo => 
+      todo.id === todoId ? { ...todo, image_url: imageUrl } : todo
+    ));
+  };
+
   const handleLogout = () => {
     console.log('Logging out');
     logout();
@@ -222,7 +238,15 @@ const DatabaseTodoApp: React.FC<DatabaseTodoAppProps> = ({ user, onLogout, onSho
             <p className="text-white/80 mt-2">{formatDate()}</p>
           </div>
           
-          <div className="flex space-x-3">
+          <div className="flex flex-wrap gap-3">
+            <Button
+              onClick={onShowPublicTodos}
+              variant="outline"
+              className="glass-modern border-white/30 text-white hover:bg-white/20 rounded-xl px-6 py-3 transition-all duration-300 transform hover:scale-105"
+            >
+              <Users className="w-5 h-5 mr-2" />
+              Lihat Aktivitas Teman
+            </Button>
             <Button
               onClick={onShowHistory}
               variant="outline"
@@ -330,16 +354,38 @@ const DatabaseTodoApp: React.FC<DatabaseTodoAppProps> = ({ user, onLogout, onSho
                           </span>
                         </div>
                       )}
+                      {todo.image_url && (
+                        <div className="mt-2">
+                          <img 
+                            src={todo.image_url} 
+                            alt="Bukti aktivitas" 
+                            className="w-20 h-20 object-cover rounded-lg border-2 border-green-200"
+                          />
+                        </div>
+                      )}
                     </div>
                     
-                    <Button
-                      onClick={() => setDeleteConfirm({ isOpen: true, todo })}
-                      variant="ghost"
-                      size="sm"
-                      className="text-red-400 hover:text-red-600 hover:bg-red-50 rounded-full p-2 transition-all duration-300 transform hover:scale-110"
-                    >
-                      <Trash2 className="w-5 h-5" />
-                    </Button>
+                    <div className="flex space-x-2">
+                      {todo.completed && !todo.image_url && (
+                        <Button
+                          onClick={() => setImageUpload({ isOpen: true, todoId: todo.id })}
+                          variant="ghost"
+                          size="sm"
+                          className="text-blue-500 hover:text-blue-700 hover:bg-blue-50 rounded-full p-2"
+                        >
+                          <Camera className="w-5 h-5" />
+                        </Button>
+                      )}
+                      
+                      <Button
+                        onClick={() => setDeleteConfirm({ isOpen: true, todo })}
+                        variant="ghost"
+                        size="sm"
+                        className="text-red-400 hover:text-red-600 hover:bg-red-50 rounded-full p-2 transition-all duration-300 transform hover:scale-110"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -383,6 +429,17 @@ const DatabaseTodoApp: React.FC<DatabaseTodoAppProps> = ({ user, onLogout, onSho
         title="Hapus Kegiatan?"
         description="Yakin mau hapus kegiatan ini? Nggak bisa dibalikin lho! 🥺"
         todoText={deleteConfirm.todo?.text}
+      />
+
+      <ImageUploadModal
+        isOpen={imageUpload.isOpen}
+        onClose={() => setImageUpload({ isOpen: false })}
+        onImageUploaded={(imageUrl) => {
+          if (imageUpload.todoId) {
+            handleImageUploaded(imageUpload.todoId, imageUrl);
+          }
+        }}
+        todoId={imageUpload.todoId || ''}
       />
     </div>
   );

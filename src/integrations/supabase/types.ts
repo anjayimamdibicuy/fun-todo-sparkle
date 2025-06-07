@@ -16,6 +16,7 @@ export type Database = {
           created_at: string
           date: string
           id: string
+          image_url: string | null
           is_mandatory: boolean | null
           text: string
           user_id: string
@@ -26,6 +27,7 @@ export type Database = {
           created_at?: string
           date?: string
           id?: string
+          image_url?: string | null
           is_mandatory?: boolean | null
           text: string
           user_id: string
@@ -36,6 +38,7 @@ export type Database = {
           created_at?: string
           date?: string
           id?: string
+          image_url?: string | null
           is_mandatory?: boolean | null
           text?: string
           user_id?: string
@@ -70,7 +73,20 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      public_todos: {
+        Row: {
+          completed: boolean | null
+          completed_at: string | null
+          created_at: string | null
+          date: string | null
+          id: string | null
+          image_url: string | null
+          is_mandatory: boolean | null
+          text: string | null
+          user_name: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       generate_mandatory_todos: {

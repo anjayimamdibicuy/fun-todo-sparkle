@@ -2,23 +2,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-
-export interface DatabaseTodo {
-  id: string;
-  user_id: string;
-  text: string;
-  is_mandatory: boolean;
-  completed: boolean;
-  date: string;
-  created_at: string;
-  completed_at?: string;
-}
-
-export interface DatabaseUser {
-  id: string;
-  name: string;
-  created_at: string;
-}
+import { DatabaseTodo, DatabaseUser } from '@/types/database';
 
 export const useDatabase = (initialUser?: DatabaseUser | null) => {
   const [currentUser, setCurrentUser] = useState<DatabaseUser | null>(initialUser || null);

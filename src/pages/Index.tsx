@@ -3,9 +3,10 @@ import React, { useState, useEffect } from 'react';
 import AuthPage from '@/components/AuthPage';
 import DatabaseTodoApp from '@/components/DatabaseTodoApp';
 import DatabaseHistoryPage from '@/components/DatabaseHistoryPage';
-import { type DatabaseUser } from '@/hooks/useDatabase';
+import PublicTodosPage from '@/components/PublicTodos/PublicTodosPage';
+import { DatabaseUser } from '@/types/database';
 
-type Page = 'auth' | 'todo' | 'history';
+type Page = 'auth' | 'todo' | 'history' | 'public';
 
 const Index = () => {
   const [currentPage, setCurrentPage] = useState<Page>('auth');
@@ -41,6 +42,10 @@ const Index = () => {
     setCurrentPage('history');
   };
 
+  const handleShowPublicTodos = () => {
+    setCurrentPage('public');
+  };
+
   const handleBackToTodo = () => {
     setCurrentPage('todo');
   };
@@ -54,12 +59,15 @@ const Index = () => {
           user={currentUser}
           onLogout={handleLogout}
           onShowHistory={handleShowHistory}
+          onShowPublicTodos={handleShowPublicTodos}
         />
       ) : (
         <AuthPage onLogin={handleLogin} />
       );
     case 'history':
       return <DatabaseHistoryPage onBack={handleBackToTodo} />;
+    case 'public':
+      return <PublicTodosPage onBack={handleBackToTodo} />;
     default:
       return <AuthPage onLogin={handleLogin} />;
   }
