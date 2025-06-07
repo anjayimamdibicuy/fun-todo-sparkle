@@ -9,6 +9,45 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      todo_comments: {
+        Row: {
+          comment: string
+          created_at: string
+          id: string
+          todo_id: string
+          user_name: string
+        }
+        Insert: {
+          comment: string
+          created_at?: string
+          id?: string
+          todo_id: string
+          user_name: string
+        }
+        Update: {
+          comment?: string
+          created_at?: string
+          id?: string
+          todo_id?: string
+          user_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "todo_comments_todo_id_fkey"
+            columns: ["todo_id"]
+            isOneToOne: false
+            referencedRelation: "public_todos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "todo_comments_todo_id_fkey"
+            columns: ["todo_id"]
+            isOneToOne: false
+            referencedRelation: "todos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       todos: {
         Row: {
           completed: boolean | null

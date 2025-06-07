@@ -1,8 +1,9 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { DatabaseTodo, DatabaseUser } from '@/types/database';
+
+export { DatabaseTodo, DatabaseUser };
 
 export const useDatabase = (initialUser?: DatabaseUser | null) => {
   const [currentUser, setCurrentUser] = useState<DatabaseUser | null>(initialUser || null);
