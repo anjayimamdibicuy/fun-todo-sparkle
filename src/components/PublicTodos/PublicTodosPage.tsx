@@ -2,10 +2,11 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Users, Eye, Calendar, Image as ImageIcon } from 'lucide-react';
+import { ArrowLeft, Users, Eye, Calendar, Camera, Heart } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { PublicTodo } from '@/types/database';
 import { toast } from '@/hooks/use-toast';
+import CommentSection from '../Comments/CommentSection';
 
 interface PublicTodosPageProps {
   onBack: () => void;
@@ -15,8 +16,16 @@ const PublicTodosPage: React.FC<PublicTodosPageProps> = ({ onBack }) => {
   const [publicTodos, setPublicTodos] = useState<PublicTodo[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [currentUser, setCurrentUser] = useState<string>('');
 
   useEffect(() => {
+    // Get current user from localStorage
+    const savedUser = localStorage.getItem('todo_current_user');
+    if (savedUser) {
+      const user = JSON.parse(savedUser);
+      setCurrentUser(user.name);
+    }
+    
     loadPublicTodos();
   }, []);
 
@@ -25,7 +34,8 @@ const PublicTodosPage: React.FC<PublicTodosPageProps> = ({ onBack }) => {
       const { data, error } = await supabase
         .from('public_todos')
         .select('*')
-        .limit(50);
+        .order('completed_at', { ascending: false })
+        .limit(100);
 
       if (error) throw error;
       
@@ -59,6 +69,8 @@ const PublicTodosPage: React.FC<PublicTodosPageProps> = ({ onBack }) => {
       minute: '2-digit'
     });
   };
+
+  const isMyTodo = (userName: string) => userName === currentUser;
 
   const groupedTodos = publicTodos.reduce((acc: Record<string, PublicTodo[]>, todo) => {
     const date = todo.date;
@@ -128,46 +140,71 @@ const PublicTodosPage: React.FC<PublicTodosPageProps> = ({ onBack }) => {
                     </CardDescription>
                   </CardHeader>
                   
-                  <CardContent className="space-y-3">
-                    {todos.map((todo) => (
-                      <div
-                        key={todo.id}
-                        className="bg-white/90 p-4 rounded-xl border-l-4 border-green-400"
-                      >
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center space-x-2 mb-2">
-                              <span className="font-semibold text-gray-800">
-                                {todo.user_name}
-                              </span>
-                              {todo.is_mandatory && (
-                                <span className="text-xs bg-purple-100 text-purple-600 px-2 py-1 rounded-full">
-                                  💪 Wajib
+                  <CardContent className="space-y-4">
+                    {todos.map((todo) => {
+                      const isMine = isMyTodo(todo.user_name);
+                      return (
+                        <div
+                          key={todo.id}
+                          className={`p-4 rounded-xl border-l-4 transition-all duration-300 hover:scale-[1.02] ${
+                            isMine 
+                              ? 'bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-400' 
+                              : 'bg-white/90 border-green-400'
+                          }`}
+                        >
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <div className="flex items-center space-x-2 mb-2">
+                                <span className={`font-semibold ${isMine ? 'text-blue-800' : 'text-gray-800'}`}>
+                                  {todo.user_name} {isMine && '(Kamu)'}
                                 </span>
+                                {todo.is_mandatory && (
+                                  <span className="text-xs bg-purple-100 text-purple-600 px-2 py-1 rounded-full flex items-center space-x-1">
+                                    <Heart className="w-3 h-3" />
+                                    <span>Wajib</span>
+                                  </span>
+                                )}
+                                <span className="text-xs text-gray-500">
+                                  {todo.completed_at && formatTime(todo.completed_at)}
+                                </span>
+                              </div>
+                              
+                              <p className={`font-medium mb-2 ${isMine ? 'text-blue-700' : 'text-gray-700'}`}>
+                                ✅ {todo.text}
+                              </p>
+
+                              {todo.image_url && (
+                                <div className="mb-2">
+                                  <img 
+                                    src={todo.image_url} 
+                                    alt="Bukti aktivitas" 
+                                    className="w-24 h-24 object-cover rounded-lg border-2 border-gray-200 cursor-pointer hover:scale-105 transition-transform"
+                                    onClick={() => setSelectedImage(todo.image_url!)}
+                                  />
+                                </div>
                               )}
-                              <span className="text-xs text-gray-500">
-                                {todo.completed_at && formatTime(todo.completed_at)}
-                              </span>
+
+                              {/* Comment Section */}
+                              <CommentSection 
+                                todoId={todo.id} 
+                                currentUserName={currentUser}
+                              />
                             </div>
                             
-                            <p className="text-gray-700 font-medium">
-                              ✅ {todo.text}
-                            </p>
+                            {todo.image_url && (
+                              <Button
+                                onClick={() => setSelectedImage(todo.image_url!)}
+                                variant="ghost"
+                                size="sm"
+                                className="ml-2 text-blue-500 hover:text-blue-700"
+                              >
+                                <Camera className="w-5 h-5" />
+                              </Button>
+                            )}
                           </div>
-                          
-                          {todo.image_url && (
-                            <Button
-                              onClick={() => setSelectedImage(todo.image_url!)}
-                              variant="ghost"
-                              size="sm"
-                              className="ml-2 text-blue-500 hover:text-blue-700"
-                            >
-                              <ImageIcon className="w-5 h-5" />
-                            </Button>
-                          )}
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </CardContent>
                 </Card>
               ))}
@@ -175,7 +212,7 @@ const PublicTodosPage: React.FC<PublicTodosPageProps> = ({ onBack }) => {
         )}
       </div>
 
-      {/* Image Modal */}
+      {/* Image Preview Modal */}
       {selectedImage && (
         <div 
           className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4"

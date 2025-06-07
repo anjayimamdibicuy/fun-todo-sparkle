@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,7 +9,7 @@ import AddTodoModal from './AddTodoModal';
 import EnhancedMandatoryChecklist from './EnhancedMandatoryChecklist';
 import NotificationSystem from './NotificationSystem';
 import ConfirmDialog from './ConfirmDialog';
-import ImageUploadModal from './ImageUpload/ImageUploadModal';
+import EnhancedImageUpload from './ImageUpload/EnhancedImageUpload';
 import { toast } from '@/hooks/use-toast';
 
 interface DatabaseTodoAppProps {
@@ -29,7 +28,7 @@ const DatabaseTodoApp: React.FC<DatabaseTodoAppProps> = ({
   const [todos, setTodos] = useState<DatabaseTodo[]>([]);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: boolean; todo?: DatabaseTodo }>({ isOpen: false });
-  const [imageUpload, setImageUpload] = useState<{ isOpen: boolean; todoId?: string }>({ isOpen: false });
+  const [imageUpload, setImageUpload] = useState<{ isOpen: boolean; todoId?: string; currentImageUrl?: string }>({ isOpen: false });
   const [isLoading, setIsLoading] = useState(true);
   
   // Pass the user to useDatabase hook
@@ -175,6 +174,16 @@ const DatabaseTodoApp: React.FC<DatabaseTodoAppProps> = ({
     ));
   };
 
+  const handleImageDeleted = (todoId: string) => {
+    setTodos(prev => prev.map(todo => 
+      todo.id === todoId ? { ...todo, image_url: undefined } : todo
+    ));
+  };
+
+  const openImageUpload = (todoId: string, currentImageUrl?: string) => {
+    setImageUpload({ isOpen: true, todoId, currentImageUrl });
+  };
+
   const handleLogout = () => {
     console.log('Logging out');
     logout();
@@ -296,7 +305,14 @@ const DatabaseTodoApp: React.FC<DatabaseTodoAppProps> = ({
         </Card>
 
         {/* Enhanced Mandatory Checklist */}
-        <EnhancedMandatoryChecklist todos={todos} onToggleTodo={handleToggleTodo} />
+        <EnhancedMandatoryChecklist 
+          todos={todos} 
+          onToggleTodo={handleToggleTodo}
+          onImageUpload={(todoId) => {
+            const todo = todos.find(t => t.id === todoId);
+            openImageUpload(todoId, todo?.image_url);
+          }}
+        />
 
         {/* Add Todo Button */}
         <div className="flex justify-center mb-8 animate-fade-in">
@@ -359,16 +375,17 @@ const DatabaseTodoApp: React.FC<DatabaseTodoAppProps> = ({
                           <img 
                             src={todo.image_url} 
                             alt="Bukti aktivitas" 
-                            className="w-20 h-20 object-cover rounded-lg border-2 border-green-200"
+                            className="w-20 h-20 object-cover rounded-lg border-2 border-green-200 cursor-pointer"
+                            onClick={() => openImageUpload(todo.id, todo.image_url)}
                           />
                         </div>
                       )}
                     </div>
                     
                     <div className="flex space-x-2">
-                      {todo.completed && !todo.image_url && (
+                      {todo.completed && (
                         <Button
-                          onClick={() => setImageUpload({ isOpen: true, todoId: todo.id })}
+                          onClick={() => openImageUpload(todo.id, todo.image_url)}
                           variant="ghost"
                           size="sm"
                           className="text-blue-500 hover:text-blue-700 hover:bg-blue-50 rounded-full p-2"
@@ -431,7 +448,7 @@ const DatabaseTodoApp: React.FC<DatabaseTodoAppProps> = ({
         todoText={deleteConfirm.todo?.text}
       />
 
-      <ImageUploadModal
+      <EnhancedImageUpload
         isOpen={imageUpload.isOpen}
         onClose={() => setImageUpload({ isOpen: false })}
         onImageUploaded={(imageUrl) => {
@@ -439,7 +456,13 @@ const DatabaseTodoApp: React.FC<DatabaseTodoAppProps> = ({
             handleImageUploaded(imageUpload.todoId, imageUrl);
           }
         }}
+        onImageDeleted={() => {
+          if (imageUpload.todoId) {
+            handleImageDeleted(imageUpload.todoId);
+          }
+        }}
         todoId={imageUpload.todoId || ''}
+        currentImageUrl={imageUpload.currentImageUrl}
       />
     </div>
   );

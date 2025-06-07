@@ -2,17 +2,20 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Clock, Droplet, Heart, AlertTriangle, CheckCircle } from 'lucide-react';
-import { type DatabaseTodo } from '@/hooks/useDatabase';
+import { Clock, Droplet, Heart, AlertTriangle, CheckCircle, Camera } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { DatabaseTodo } from '@/types/database';
 
 interface EnhancedMandatoryChecklistProps {
   todos: DatabaseTodo[];
   onToggleTodo: (id: string, completed: boolean) => void;
+  onImageUpload: (todoId: string) => void;
 }
 
 const EnhancedMandatoryChecklist: React.FC<EnhancedMandatoryChecklistProps> = ({ 
   todos, 
-  onToggleTodo 
+  onToggleTodo,
+  onImageUpload
 }) => {
   const mandatoryItems = [
     {
@@ -59,7 +62,6 @@ const EnhancedMandatoryChecklist: React.FC<EnhancedMandatoryChecklistProps> = ({
     }
   ];
 
-  // Find todo by matching text more precisely
   const getMandatoryTodo = (itemKey: string, itemText: string) => {
     return todos.find(todo => 
       todo.is_mandatory && 
@@ -75,10 +77,6 @@ const EnhancedMandatoryChecklist: React.FC<EnhancedMandatoryChecklistProps> = ({
 
   const mandatoryTodos = todos.filter(todo => todo.is_mandatory);
   const completedCount = mandatoryTodos.filter(todo => todo.completed).length;
-
-  console.log('Mandatory todos:', mandatoryTodos);
-  console.log('Total mandatory todos in component:', mandatoryTodos.length);
-  console.log('Completed mandatory todos:', completedCount);
 
   return (
     <Card className="glass-modern border-0 shadow-xl mb-6 animate-fade-in">
@@ -98,8 +96,6 @@ const EnhancedMandatoryChecklist: React.FC<EnhancedMandatoryChecklistProps> = ({
           const relatedTodo = getMandatoryTodo(item.key, item.text);
           const isCompleted = relatedTodo?.completed || false;
           
-          console.log(`Item ${item.text}:`, { relatedTodo, isCompleted });
-          
           return (
             <div
               key={item.key}
@@ -114,12 +110,8 @@ const EnhancedMandatoryChecklist: React.FC<EnhancedMandatoryChecklistProps> = ({
                   id={`mandatory-${item.key}`}
                   checked={isCompleted}
                   onCheckedChange={(checked) => {
-                    console.log(`Checkbox changed for ${item.text}:`, checked);
                     if (relatedTodo) {
-                      console.log('Calling onToggleTodo with:', relatedTodo.id, !!checked);
                       onToggleTodo(relatedTodo.id, !!checked);
-                    } else {
-                      console.log('No related todo found for:', item.text);
                     }
                   }}
                   className="mt-1 w-6 h-6 rounded-full data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-pink-500 data-[state=checked]:to-purple-500 data-[state=checked]:border-pink-500 transition-all duration-300"
@@ -144,18 +136,32 @@ const EnhancedMandatoryChecklist: React.FC<EnhancedMandatoryChecklistProps> = ({
                   <div className="text-sm text-gray-600 whitespace-pre-line ml-7">
                     {item.detail}
                   </div>
-                  {isCompleted && (
+                  
+                  {relatedTodo?.image_url && (
                     <div className="mt-2 ml-7">
+                      <img 
+                        src={relatedTodo.image_url} 
+                        alt="Bukti aktivitas" 
+                        className="w-20 h-20 object-cover rounded-lg border-2 border-green-200 cursor-pointer"
+                        onClick={() => relatedTodo && onImageUpload(relatedTodo.id)}
+                      />
+                    </div>
+                  )}
+                  
+                  {isCompleted && (
+                    <div className="mt-2 ml-7 flex items-center space-x-2">
                       <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded-full animate-fade-in">
                         ✅ Keren! Keep it up! 🌟
                       </span>
-                    </div>
-                  )}
-                  {!relatedTodo && (
-                    <div className="mt-2 ml-7">
-                      <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
-                        Todo belum tersedia
-                      </span>
+                      <Button
+                        onClick={() => relatedTodo && onImageUpload(relatedTodo.id)}
+                        variant="ghost"
+                        size="sm"
+                        className="text-blue-500 hover:text-blue-700 hover:bg-blue-50 rounded-full p-2"
+                      >
+                        <Camera className="w-4 h-4" />
+                        {relatedTodo?.image_url ? 'Edit Foto' : 'Tambah Foto'}
+                      </Button>
                     </div>
                   )}
                 </div>

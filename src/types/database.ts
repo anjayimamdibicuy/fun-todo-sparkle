@@ -28,3 +28,11 @@ export interface PublicTodo {
   image_url?: string;
   user_name: string;
 }
+
+export interface TodoComment {
+  id: string;
+  todo_id: string;
+  user_name: string;
+  comment: string;
+  created_at: string;
+}
